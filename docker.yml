@@ -1,0 +1,46 @@
+- hosts: docker_host
+  vars: 
+      myimage: "arnab83/phpweb1"
+  tasks:
+    - name: adding docker repo
+      yum_repository:
+         name: Docker
+         description: docker repo
+         baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+         gpgcheck: no   
+
+    - name: Python interpriter 
+      pip:
+         name: docker-py
+
+    - name: Install Docker
+      shell:
+         cmd: yum install --nobest docker-ce -y
+      register: x
+    - debug:
+        var: x
+
+    - name: start docker service
+      service:
+        name: docker
+        state: restarted
+
+    - name: Image download
+      docker_image:
+         name: "{{  myimage  }}"
+         source: pull
+
+    - name: contain copy
+      copy:
+         src: index.php
+         dest: /webdata/
+
+    - name: Deploy container
+      docker_container:
+         name: myweb
+         image: "{{ myimage }}"
+         volumes:
+           - /webdata:/var/www/html
+         ports:
+           - "8085:80"
+         state: started
