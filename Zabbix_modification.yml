@@ -1,0 +1,21 @@
+- hosts: all
+  tasks:
+    - name: Add new line in zabbix_conf
+      lineinfile:
+        dest: /etc/zabbix/zabbix_agentd.conf
+        line: 'Include=/etc/zabbix/zabbix_agentd.d/'
+        insertafter: '# Include='
+        state: present
+        backup: yes
+
+    - name: copy rofs config file
+      copy:
+        src: '/tmp/rofs.conf'
+        dest: '/etc/zabbix/zabbix_agentd.d/rofs.conf'
+        owner: root
+        group: root
+
+    - name: restart zabbix-agent
+      service:
+        name: zabbix-agent
+        state: restarted
